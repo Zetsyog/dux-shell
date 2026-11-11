@@ -16,6 +16,7 @@ Item {
 
     required property var controller
     required property var systemModel
+    required property color backgroundColor
 
     readonly property bool tight: root.controller.homeCompactTight
     readonly property real slotSize: root.tight ? Theme.iconSize : Theme.iconSizeLarge
@@ -394,10 +395,11 @@ Item {
     component IslandClock: ClockContent {
         vertical: root.isVertical
         displayMode: root.clockDisplay
-        fontSize: root.textSize
+        fontSize: root.clockDisplay === "fun" ? (root.tight ? Theme.fontSizeXXLarge : Theme.fontSizeDisplay + Theme.spacingXXS) : root.textSize
         availableWidth: root.width
         dateColor: Theme.surfaceTextMedium
         separatorColor: Theme.primary
+        outlineColor: Theme.withAlpha(root.backgroundColor, 1)
     }
 
     component ConnectivityIcon: Item {
