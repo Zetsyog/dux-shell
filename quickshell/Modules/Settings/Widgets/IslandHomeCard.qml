@@ -11,7 +11,7 @@ SettingsCard {
     property bool hosted: false
     property var parentModal: null
 
-    readonly property var clockDisplayValues: ["time", "date", "both"]
+    readonly property var clockDisplayValues: ["time", "date", "both", "fun"]
     readonly property var systemLevelDisplayValues: ["icon", "percentage", "both"]
     readonly property bool batteryShown: SettingsData.islandHomeGroupEnabled(root.store.config, "status") && BatteryService.batteryAvailable && SettingsData.islandHomeStatusContent(root.store.config) === "battery"
 
@@ -53,7 +53,7 @@ SettingsCard {
         resetStore: root.store
         resetKeys: ["islandHomeClockDisplay"]
         text: I18n.tr("Clock style", "island settings: clock display mode row")
-        model: [I18n.tr("Time", "island settings: clock shows time only"), I18n.tr("Date", "island settings: clock shows date only"), I18n.tr("Both", "island settings: clock shows time and date")]
+        model: [I18n.tr("Time", "island settings: clock shows time only"), I18n.tr("Date", "island settings: clock shows date only"), I18n.tr("Both", "island settings: clock shows time and date"), I18n.tr("Fun")]
         values: root.clockDisplayValues
         value: root.store.setting("islandHomeClockDisplay")
         fallbackValue: "both"

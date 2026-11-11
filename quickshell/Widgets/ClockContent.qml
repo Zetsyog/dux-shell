@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import Quickshell
 import qs.Common
@@ -16,16 +18,20 @@ Item {
     property color textColor: Theme.surfaceText
     property color dateColor: textColor
     property color separatorColor: Theme.outlineButton
+    property color outlineColor: Theme.hostSurface
+    property real outlineWidth: 3
     property bool segmented: false
     property var locale: I18n.locale()
     property date date: systemClock.date
 
-    readonly property string timeText: date.toLocaleTimeString(locale, SettingsData.getEffectiveTimeFormat())
+    readonly property bool funStyle: displayMode === "fun"
+    readonly property real colonOffset: Math.round(digitMetrics.tightBoundingRect.y + digitMetrics.tightBoundingRect.height / 2 - colonMetrics.tightBoundingRect.y - colonMetrics.tightBoundingRect.height / 2)
+    readonly property string timeText: date.toLocaleTimeString(locale, funStyle ? SettingsData.getEffectiveTimeFormat().replace(/^h:/, "hh:") : SettingsData.getEffectiveTimeFormat())
     readonly property string dateText: date.toLocaleDateString(locale, SettingsData.getEffectiveDateFormat())
     readonly property var timeLines: vertical ? stackedTime() : [timeText]
     readonly property var dateLines: vertical ? stackedDate() : [dateText]
     readonly property bool showTime: displayMode !== "date"
-    readonly property bool showDate: displayMode !== "time"
+    readonly property bool showDate: displayMode !== "time" && !funStyle
     readonly property bool split: segmented && !vertical && showTime && showDate
     readonly property real splitOffset: split ? layout.x + separator.x + separator.width / 2 : 0
 
@@ -69,7 +75,7 @@ Item {
 
                 required property int index
                 readonly property string text: stack.lines[index] ?? ""
-                readonly property var cells: root.vertical ? (text.match(/\d|\D+/g) || []) : [text]
+                readonly property var cells: root.vertical || root.funStyle ? (text.match(/\d|\D+/g) || []) : [text]
 
                 anchors.horizontalCenter: parent.horizontalCenter
                 LayoutMirroring.enabled: false
@@ -77,11 +83,45 @@ Item {
                 Repeater {
                     model: line.cells.length
 
-                    NumericText {
+                    Item {
+                        id: cell
+
                         required property int index
-                        text: line.cells[index] ?? ""
-                        color: stack.color
-                        font.pixelSize: root.fontSize
+                        readonly property bool tighten: root.funStyle && (root.vertical ? line.index < 2 && index === 0 : index === 0 || index === 3)
+
+                        width: glyph.width - (tighten ? Theme.spacingXXS * 4 : 0)
+                        height: glyph.height
+
+                        NumericText {
+                            id: glyph
+
+                            text: line.cells[cell.index] ?? ""
+                            y: root.funStyle && text === ":" ? root.colonOffset : 0
+                            color: root.funStyle && (root.vertical ? line.index < 2 && cell.index === 1 : cell.index === 1 || cell.index === 4) ? Theme.primary : stack.color
+                            fontToken: root.funStyle ? (titanOneFont.name || "Titan One") : "ui"
+                            font.pixelSize: root.fontSize
+
+                            Repeater {
+                                model: root.funStyle && root.outlineWidth > 0 ? 8 : 0
+
+                                StyledText {
+                                    required property int index
+
+                                    x: Math.cos(index * Math.PI / 4) * root.outlineWidth
+                                    y: Math.sin(index * Math.PI / 4) * root.outlineWidth
+                                    z: -1
+                                    width: glyph.width
+                                    height: glyph.height
+                                    text: glyph.text
+                                    font: glyph.font
+                                    color: root.outlineColor
+                                    renderType: glyph.renderType
+                                    renderTypeQuality: glyph.renderTypeQuality
+                                    horizontalAlignment: glyph.horizontalAlignment
+                                    wrapMode: Text.NoWrap
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -146,6 +186,26 @@ Item {
             lines: root.dateLines
             color: root.dateColor
         }
+    }
+
+    StyledTextMetrics {
+        id: digitMetrics
+
+        text: "0"
+        fontToken: titanOneFont.name || "Titan One"
+        font.pixelSize: root.fontSize
+    }
+
+    StyledTextMetrics {
+        id: colonMetrics
+
+        text: ":"
+        font: digitMetrics.font
+    }
+
+    FontLoader {
+        id: titanOneFont
+        source: root.funStyle ? Qt.resolvedUrl("../assets/fonts/titan-one/TitanOne-Regular.ttf") : ""
     }
 
     SystemClock {

@@ -1012,7 +1012,7 @@ Singleton {
 
     function islandClockDisplay(bc) {
         const value = islandSetting(bc, "islandHomeClockDisplay");
-        return value === "time" || value === "date" || value === "both" ? value : "both";
+        return value === "time" || value === "date" || value === "both" || value === "fun" ? value : "both";
     }
 
     function islandHomeStatusContent(bc) {

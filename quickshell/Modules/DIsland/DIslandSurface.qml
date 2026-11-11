@@ -632,6 +632,7 @@ Item {
         HomeCompact {
             controller: root.controller
             systemModel: root.systemModel
+            backgroundColor: root.compactBackground && !root.ownColor ? root.compactBackgroundColor : root.effectiveSurfaceColor
         }
     }
 
